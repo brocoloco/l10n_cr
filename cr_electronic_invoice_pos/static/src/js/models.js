@@ -25,9 +25,6 @@ odoo.define('cr_electronic_invoice_pos.models', function (require) {
     var ajax = require('web.ajax');
     var core = require('web.core');
     var models = require('point_of_sale.models');
-    var Model = require('web.DataModel');
-    var QWeb = core.qweb;
-    var _t = core._t;
     var exports = {};
 
     var _sequence_next = function(seq){
@@ -57,7 +54,7 @@ odoo.define('cr_electronic_invoice_pos.models', function (require) {
         var prefix = format(seq.prefix, idict);
         var suffix = format(seq.suffix, idict);
         seq.number_next_actual += seq.number_increment;
-        //debugger;
+        debugger;
         return prefix + pad(num, seq.padding) + suffix;
     };
 
@@ -69,33 +66,34 @@ odoo.define('cr_electronic_invoice_pos.models', function (require) {
             self.models.push({
                 model: 'ir.sequence',
                 fields: [],
-                ids:    function(self){ return [self.config.sequence_id[0],self.config.return_sequence_id[0]]; },
-                loaded: function(self, sequence){ self.pos_order_sequence = sequence[0];self.pos_return_order_sequence = sequence[1]; },
+                ids:    function(self){ return [self.config.FE_sequence_id[0],self.config.TE_sequence_id[0]]; },
+                loaded: function(self, sequence){ self.FE_sequence = sequence[0];self.TE_sequence = sequence[1]; },
             });
-            //self.models.push({
-            //    model: 'ir.sequence',
-            //    fields: [],
-            //    ids:    function(self){ return [self.config.return_sequence_id[0]]; },
-            //    loaded: function(self, sequence){ self.pos_order_return_sequence = sequence[0]; },
-            //});
-            //return PosModelParent.prototype.load_server_data.apply(this, arguments);
             //debugger;
             return PosModelParent.load_server_data.apply(this, arguments);
         },
         push_order: function(order, opts) {
-            debugger;
+            //debugger;
             if (order !== undefined) {
                 // revisar si es normal o devolucion . Pendiente !!!
-                if (order.return_ref) {
-                    order.set({'sequence_ref_number': this.pos_return_order_sequence.number_next_actual});
-                    order.set({'sequence_ref': _sequence_next(this.pos_return_order_sequence)});
+                if (order.get('client') && order.get('client').vat) {
+                    order.set({'sequence': this.FE_sequence.number_next_actual});
+                    this.consecutive = _sequence_next(this.FE_sequence);
+                    this.consecutive = this.consecutive.substring(21,40);
+                    order.set({'consecutive': this.consecutive});
+                    order.set({'number_electronic': _sequence_next(this.FE_sequence)});
+                    order.set({'tipo_documento': 'FE'});
                 }
                 else{
-                    order.set({'sequence_ref_number': this.pos_order_sequence.number_next_actual});
-                    order.set({'sequence_ref': _sequence_next(this.pos_order_sequence)});
+                    order.set({'sequence': this.TE_sequence.number_next_actual});
+                    this.consecutive = _sequence_next(this.TE_sequence);
+                    this.consecutive = this.consecutive.substring(21,40);
+                    order.set({'consecutive': this.consecutive});
+                    order.set({'number_electronic': _sequence_next(this.TE_sequence)});
+                    order.set({'tipo_documento': 'TE'});
                 }
             };
-            debugger;
+            //debugger;
             //return PosModelParent.push_order.call(order,opts);
             return PosModelParent.push_order.apply(this, arguments);
         }
@@ -105,15 +103,17 @@ odoo.define('cr_electronic_invoice_pos.models', function (require) {
     models.Order = models.Order.extend({
         export_for_printing: function(attributes){
             var order = OrderParent.export_for_printing.apply(this, arguments);
-            order['sequence_ref'] = this.get('sequence_ref');
-            order['sequence_ref_number'] = this.get('sequence_ref_number');
+            order['number_electronic'] = this.get('number_electronic');
+            order['sequence'] = this.get('sequence');
+            order['tipo_documento'] = this.get('tipo_documento');
             //debugger;
             return order;
         },
         export_as_JSON: function() {
             var order = OrderParent.export_as_JSON.apply(this, arguments);
-            order['sequence_ref'] = this.get('sequence_ref');
-            order['sequence_ref_number'] = this.get('sequence_ref_number');
+            order['number_electronic'] = this.get('number_electronic');
+            order['sequence'] = this.get('sequence');
+            order['tipo_documento'] = this.get('tipo_documento');
             //debugger;
             return order;
         }

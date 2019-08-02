@@ -16,5 +16,9 @@ class ProductElectronic(models.Model):
 
     commercial_measurement = fields.Char(
         string="Unidad de Medida Comercial", required=False, )
-    code_type_id = fields.Many2one(comodel_name="code.type.product", string="Tipo de código", required=False,
+    code_type_id = fields.Many2one("code.type.product", string="Tipo de código", required=False,
                                    default=_default_code_type_id)
+
+    tariff_head = fields.Char(string="Partida arancelaria para factura"
+                                     " de exportación",
+                              required=False, )

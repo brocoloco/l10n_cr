@@ -18,7 +18,11 @@
 
                 <field name="website" position="before">
                     <field name="commercial_name"/>
-                    <field name="activity_id"/>
+                    <field name="activity_id" 
+                            domain="[('id', 'in', economic_activities_ids)]" 
+                            options='{"no_open": True, "no_create": True}' />
+                    <field name="economic_activities_ids" invisible="1" readonly="1" />
+                    <button name="action_get_economic_activities" type="object" string="Consultar Actividad Economica en Hacienda" /> 
                 </field>
 
                 <field name="city" position="attributes">
@@ -57,10 +61,6 @@
                            context="{'country_id': country_id, 'state_id': state_id, 'county_id': county_id, 'district_id': district_id, 'zip': zip}"/>
                 </field>
 
-                <field name="phone" position="before">
-                    <field name="phone_code"/>
-                </field>
-
                 <field name="partner_id" position="after">
                     <field name="identification_id"/>
                     <field name="vat"/>
@@ -83,13 +83,14 @@
                             </group>
                             <group cols="2">
                                 <field name="frm_ws_ambiente" widget="radio"/>
-                                <field name="version_hacienda" widget="radio"/>
                             </group>
                             <group cols="2">
                                 <field name="CCE_sequence_id"/>
                                 <field name="CPCE_sequence_id"/>
                                 <field name="RCE_sequence_id"/>
+                                <field name="FEC_sequence_id"/>
                             </group>
+
                             <group cols="2">
                                 <field name="sucursal_MR"/>
                                 <field name="terminal_MR"/>
